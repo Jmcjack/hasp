@@ -1,4 +1,4 @@
-#include <stdio> // <3
+#include <stdio>
 #include <stdlib>
 
 void main() {
