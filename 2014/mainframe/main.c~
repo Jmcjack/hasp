@@ -1,5 +1,5 @@
-#include <stdio> // <3
-#include <stdlib> //hello there
+#include <stdio>
+#include <stdlib>
 
 void main() {
 
