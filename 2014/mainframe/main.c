@@ -6,9 +6,8 @@ void main() {
 	// Initializations //
 	
 	// Set up SPI buses
-		// ADC
-		// IMU
-		// SD Card
+		// ADC					// John
+		imu_init(imu_ptr);		// John 
 		
 	// Set up serial buses
 		// GPS serial
@@ -28,18 +27,18 @@ void main() {
 	{
 		// Check Interrupt Flags
 
-		
 		// Data Acquisition //
-
-
-		// Telemetry //
-
+		read_imu(imu_ptr);
+		// John currently debugging IMU & SPI drivers
+	
+		// Error Checking //
 		
 		// Datalogging //
-
+		// Josiah currently looking into SD card data logging
 		
-		// Error Checking
-	
+		// Telemetry //
+
+		delay(1000);
 	} // End main while loop
 	
 	return;
