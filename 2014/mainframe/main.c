@@ -1,8 +1,9 @@
 #include <stdio> // <3
 #include <stdlib> //hello there
-#include <glib.h>
+#include <glib.h> // Not sre if we are still using this
 
-#include "sensors/hasp_IMU.h"
+#include "sensors/imu/hasp_IMU.h"
+#include "sensors/gps/gps_novatel.h"
 #include "globaldefs.h"
 
 gboolean g_read_IMU(gpointer);
@@ -10,6 +11,8 @@ gboolean g_read_IMU(gpointer);
 void main() {
 
 	// Initializations //
+	struct imu imu_ptr;
+	struct gps gpsData;
 	
 	// setup inital data structures
 	imu imu_ptr;
@@ -20,7 +23,7 @@ void main() {
 	init_IMU(&imu_ptr);
 		
 	// Set up serial buses
-		// GPS serial
+	init_GPS(&gpsData);
 		// Telemetry serial
 		
 	// Set up other GPIOs
@@ -30,12 +33,15 @@ void main() {
 		
 	// If no errors, downlink an OKGO
 	
-	// Should we use glib to time of this junk?
+	// Should we use glib to time of this junk? Or is there a better way for timing?
+
 	while(1)
 	{
 		GMainLoop* mainLoop = g_main_loop_new(NULL, FALSE);
-		guint IMU_ID = g_timeout_add (1000, g_read_IMU, &imu_ptr);
+		guint IMU_ID = g_timeout_add (1000, g_read_IMU, &imu_ptr);	// Every second or so?
 		g_main_loop_run(*mainLoop);
+
+		read_GPS(&gpsData);
 		
 	} // End main while loop
 
