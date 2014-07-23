@@ -10,7 +10,7 @@
 #include <linux/spi/spidev.h>
 
 #include "spi.h"
-#include "globaldefs.h"
+#include "../../globaldefs.h"
 
 inline int file_valid(const char *path)
 {
