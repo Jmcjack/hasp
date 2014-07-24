@@ -27,8 +27,6 @@ int eventABCounter = 0;
 int eventACounter = 0;
 int eventBCounter = 0;
 
-char* dump_filename = "/home/root/interruptFlag";
-
 /* Define GPIOs for output(s) (debugging) */
 
 static struct gpio outputs[] = 
@@ -38,9 +36,9 @@ static struct gpio outputs[] =
 
 /* Define GPIOs for detector events */
 static struct gpio events[] = {
-{46, GPIOF_IN, "EVENT AB"},	// Event AB Interrupt
-{27, GPIOF_IN, "EVENT A"},	// Event A Interrupt
-{65, GPIOF_IN, "EVENT B"}	// Event B Interrupt
+{46, GPIOF_IN, "EVENT A"},	// Event A Interrupt
+{27, GPIOF_IN, "EVENT B"},	// Event B Interrupt
+{65, GPIOF_IN, "EVENT AB"}	// Event AB Interrupt
 };
 
 /* The assigned IRQ numbers for the events are stored here */
@@ -51,32 +49,20 @@ static int event_irqs[] = {-1, -1, -1};
 */
 static irqreturn_t event_isr(int irq, void *data)
 {
-//if(irq == button_irqs[0] && !gpio_get_value(leds[0].gpio)) {
-//gpio_set_value(leds[0].gpio, 1);
-//}
-//else if(irq == button_irqs[1] && gpio_get_value(leds[0].gpio)) {
-//gpio_set_value(leds[0].gpio, 0);
-//
 
 	if (irq == event_irqs[0])
 	{
-		// read AB voltage from ADC
 		eventABCounter++;		
-		//printk("AB:%d:VOLTAGE\n", eventABCounter);
 		printk("$\n");	
 	}
 	if (irq == event_irqs[1])
 	{
-		// read A voltage from ADC
 		eventACounter++;
-		//printk("A:%d:VOLTAGE\n", eventACounter);
 		printk("#\n");
 	}
 	if (irq == event_irqs[2])
 	{
-		// read B voltage from ADC
 		eventBCounter++;
-		//printk("B:%d:VOLTAGE\n", eventBCounter);
 		printk("&\n");
 	}
 	
@@ -92,26 +78,27 @@ static int __init gpiomode_init(void)
 	printk(KERN_INFO "%s\n", __func__);
 
 	// register LED gpios
-	ret = gpio_request_array(outputs, ARRAY_SIZE(outputs));
+	// ret = gpio_request_array(outputs, ARRAY_SIZE(outputs));
 
-	if (ret) {
-		printk(KERN_ERR "Unable to request GPIOs for OUTPUT: %d\n", ret);
-		return ret;
-	}
+	//if (ret) {
+	//	printk(KERN_ERR "Unable to request GPIOs for 
+	//OUTPUT: %d\n", ret);
+	//	return ret;
+	//	}
 
 	// register BUTTON gpios
 	ret = gpio_request_array(events, ARRAY_SIZE(events));
 
 	if (ret) {
 		printk(KERN_ERR "Unable to request GPIOs for EVENTs: %d\n", ret);
-		goto fail1;
+		goto fail2;
 	}
 
 	//printk(KERN_INFO "Current event AB value: %d\n", gpio_get_value(buttons[0].gpio));
 	//printk(KERN_INFO "Current event A value: %d\n", gpio_get_value(buttons[1].gpio));
 	//printk(KERN_INFO "Current event B value: %d\n", gpio_get_value(buttons[2].gpio));
 
-	// Get IRQ AB
+	// Get IRQ A
 	ret = gpio_to_irq(events[0].gpio);
 
 	if(ret < 0) {
@@ -121,9 +108,9 @@ static int __init gpiomode_init(void)
 
 	event_irqs[0] = ret;
 
-	printk(KERN_INFO "Successfully requested EVENT AB IRQ # %d\n", event_irqs[0]);
+	printk(KERN_INFO "Successfully requested EVENT A IRQ # %d\n", event_irqs[0]);
 
-	// Get IRQ A
+	// Get IRQ B
 	ret = gpio_to_irq(events[1].gpio);
 
 	if(ret < 0) {
@@ -133,9 +120,9 @@ static int __init gpiomode_init(void)
 
 	event_irqs[1] = ret;
 
-	printk(KERN_INFO "Successfully requested EVENT A IRQ # %d\n", event_irqs[1]);
+	printk(KERN_INFO "Successfully requested EVENT B IRQ # %d\n", event_irqs[1]);
 
-	// Get IRQ B
+	// Get IRQ AB
 	ret = gpio_to_irq(events[2].gpio);
 
 	if(ret < 0) {
@@ -145,18 +132,10 @@ static int __init gpiomode_init(void)
 
 	event_irqs[2] = ret;
 
-	printk(KERN_INFO "Successfully requested EVENT B IRQ # %d\n", event_irqs[2]);
+	printk(KERN_INFO "Successfully requested EVENT AB IRQ # %d\n", event_irqs[2]);
 	
-	// Request IRQ for event AB
-	ret = request_irq(event_irqs[0], event_isr, IRQF_TRIGGER_RISING, "gpiomod#eventAB", NULL);
-
-	if(ret) {
-		printk(KERN_ERR "Unable to request IRQ: %d\n", ret);
-		goto fail2;
-	}
-
 	// Request IRQ for event A
-	ret = request_irq(event_irqs[1], event_isr, IRQF_TRIGGER_RISING, "gpiomod#eventA", NULL);
+	ret = request_irq(event_irqs[0], event_isr, IRQF_TRIGGER_FALLING, "gpiomod#eventA", NULL);
 
 	if(ret) {
 		printk(KERN_ERR "Unable to request IRQ: %d\n", ret);
@@ -164,7 +143,15 @@ static int __init gpiomode_init(void)
 	}
 
 	// Request IRQ for event B
-	ret = request_irq(event_irqs[2], event_isr, IRQF_TRIGGER_RISING, "gpiomod#eventB", NULL);
+	ret = request_irq(event_irqs[1], event_isr, IRQF_TRIGGER_FALLING, "gpiomod#eventB", NULL);
+
+	if(ret) {
+		printk(KERN_ERR "Unable to request IRQ: %d\n", ret);
+		goto fail2;
+	}
+
+	// Request IRQ for event AB
+	ret = request_irq(event_irqs[2], event_isr, IRQF_TRIGGER_RISING, "gpiomod#eventAB", NULL);
 
 	if(ret) {
 		printk(KERN_ERR "Unable to request IRQ: %d\n", ret);
@@ -203,8 +190,8 @@ static void __exit gpiomode_exit(void)
 	}
 
 	// unregister GPIOs
-	gpio_free_array(outputs, ARRAY_SIZE(outputs));
-	gpio_free_array(events, ARRAY_SIZE(events));
+	//gpio_free_array(outputs, ARRAY_SIZE(outputs));
+	//gpio_free_array(events, ARRAY_SIZE(events));
 }
 
 MODULE_LICENSE("GPL");

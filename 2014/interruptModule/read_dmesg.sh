@@ -11,15 +11,15 @@ do
 	
 	read -r -n1 c < "$INT_FILE"
 	
-	if [[ "$c" == "#" ]]; then
+	if [[ "$c" == "$" ]]; then
 		echo $c
 		# ./event_AB
 	fi
 	if [[ "$c" == "#" ]]; then
                 echo $c
-                # ./event_A
+                ./event_A
         fi
-	if [[ "$c" == "#" ]]; then
+	if [[ "$c" == "&" ]]; then
                 echo $c
                 # ./event_B
         fi
