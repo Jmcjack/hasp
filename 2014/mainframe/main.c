@@ -1,22 +1,17 @@
 #include <stdio> // <3
 #include <stdlib> //hello there
-#include <glib.h> // Not sre if we are still using this
 
 #include "sensors/imu/hasp_IMU.h"
 #include "sensors/gps/gps_novatel.h"
 #include "globaldefs.h"
 
-gboolean g_read_IMU(gpointer);
 
 void main() {
 
 	// Initializations //
-	struct imu imu_ptr;
-	struct gps gpsData;
-	
-	// setup inital data structures
-	imu imu_ptr;
-	
+	// Still need to put into main sensor data pointer
+	struct imu imuData_ptr;
+	struct gps gpsData_ptr;
 
 	// Set up SPI buses
 		// ADC - as of 7/20/14, this is done in the kernel.
@@ -37,11 +32,42 @@ void main() {
 
 	while(1)
 	{
-		GMainLoop* mainLoop = g_main_loop_new(NULL, FALSE);
-		guint IMU_ID = g_timeout_add (1000, g_read_IMU, &imu_ptr);	// Every second or so?
-		g_main_loop_run(*mainLoop);
-
-		read_GPS(&gpsData);
+		switch (STATE)
+		{
+			case IDLE:
+				if((g_time() - last_IMU_rd_time >= IMU_READ_PERIOD)
+					STATE = RD_IMU;
+				else if((g_time() - last_log_time) >= LOG_PERIOD)
+					STATE = LOG_DATA;
+				else if((g_time() - last_GPS_rd_time) >= GPS_READ_PERIOD)
+					STATE = RD_GPS;
+				else if((g_time - last_downlink_time) >= DOWNLINK_PERIOD)
+					STATE = DOWNLINK;
+				else
+					STATE = IDLE;
+				break;
+				
+			case RD_IMU:
+				read_imu(&imu_ptr);
+				last_IMU_rd_time = g_time();
+				break;
+			case LOG_DATA:
+			//  log_data();
+				last_log_time = g_time();
+				break;
+			case RD_GPS:
+				read_GPS(gpsData_ptr);
+				last_GPS_rd_time = g_time();
+				break;
+			case DOWNLINK:
+			//  send_downlink();
+				last_downlink_time = g_time();
+				break;
+		} // end STATE switch
+		
+	// While we are not in the main switch statement, check for interrupts
+	// Peak data is handled separately
+	system(CHECK_INTERRUPTS);
 		
 	} // End main while loop
 
@@ -51,11 +77,3 @@ void main() {
 	return;
 	
 } // End main function
-
-// G Functions used in the gloop
-gboolean g_read_IMU(gpointer data)
-{
-	read_IMU(data);
-	printf("IMU Read called!\n");
-	return 
-}
