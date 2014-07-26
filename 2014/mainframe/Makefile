@@ -1,1 +1,1 @@
-# Makey makey eggs and bakey
+gcc main.c sensors/gps/gps_novatel.c sensors/imu/hasp_imu.c sensors/peak_adc/eventA.c sensors/peak_adc/eventB.c sensors/peak_adc/eventAB.c utilites/datalogging/datalogging.c utilities/spi/spi.c utilities/gpio/simple_gpio.c -lm -o meow

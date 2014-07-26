@@ -1,41 +1,94 @@
-#include <stdio> // <3
-#include <stdlib> //hello there
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <time.h>
+#include <termios.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <string.h>
+#include <math.h>
 
 #include "sensors/imu/hasp_IMU.h"
 #include "sensors/gps/gps_novatel.h"
+#include "sensors/peak_adc/peak_ADC.h"
 #include "globaldefs.h"
 
+// Global data structures
+struct sensordata sensorData;
+struct imu imuData;
+struct gps gpsData;
+
+// Timing stuff, only for testing
+int t, t_0, log_freq;
+
+state checkState(state); // Define the main state machine
 
 void main() {
 
-	// Initializations //
-	// Still need to put into main sensor data pointer
-	struct imu imuData_ptr;
-	struct gps gpsData_ptr;
+	//Populate sensorData structure with locations of gpsData and imuData structures
+       sensorData.gpsData_ptr = &gpsData;
+       sensorData.imuData_ptr = &imuData;
+       fprintf(stderr,"after the pointer assignments\n");
 
-	// Set up SPI buses
-		// ADC - as of 7/20/14, this is done in the kernel.
-	init_IMU(&imu_ptr);
-		
-	// Set up serial buses
-	init_GPS(&gpsData);
-		// Telemetry serial
-		
-	// Set up other GPIOs
-		// GPS PPS
-		// GPS Lock
-		// Soft reset pins
-		
-	// If no errors, downlink an OKGO
+       (sensorData.gpsData_ptr)->buffer = malloc(285*sizeof(char));
+       fprintf(stderr,"after the GPS buffer allocation\n");
+
+       init_GPS(&gpsData);
+       fprintf(stderr,"after calling init_GPS()\n");
+
+       init_IMU(&imuData);
+       fprintf(stderr,"after calling init_IMU()\n");
+
+       state STATE = IDLE;
+       fprintf(stderr,"after initializing STATE as IDLE\n");
+
+       //Time reference in seconds
+       t_0 = (int)time(NULL);
+       fprintf(stderr,"time reference has been set\n");
+
+       fprintf(stderr,"right before the while(1)\n");
+       while(1)
+       {
+               t = (int)time(NULL) - t_0;
+               log_freq = t/100;
+
+               fprintf(stderr,"t=%d,log_freq=%d\n",t,log_freq);
+
+               //checkFlags();
+               STATE = checkState(STATE);
+       }
+
+
+	close_IMU(&imuData);
+	return 0;
 	
-	// Should we use glib to time of this junk? Or is there a better way for timing?
+} // End main function
 
-	while(1)
-	{
-		switch (STATE)
-		{
-			case IDLE:
-				if((g_time() - last_IMU_rd_time >= IMU_READ_PERIOD)
+state checkState(state SMSTATE)
+{
+       switch(SMSTATE)
+       {
+               case IDLE:
+			int intFlag = system(INTERRUPT_CHECK);
+			switch (intFlag)
+			{
+				case 1:
+					read_eventA();
+					printf("EventA\n");
+					break;
+				case 2:	
+					read_eventB();
+					printf("EventB\n");
+					break;
+				case 3:
+					read_eventAB();
+					printf("EventAB\n");
+					break;
+				default:
+					break;
+			}
+                       /*if((g_time() - last_IMU_rd_time >= IMU_READ_PERIOD)
 					STATE = RD_IMU;
 				else if((g_time() - last_log_time) >= LOG_PERIOD)
 					STATE = LOG_DATA;
@@ -45,35 +98,44 @@ void main() {
 					STATE = DOWNLINK;
 				else
 					STATE = IDLE;
-				break;
-				
-			case RD_IMU:
-				read_imu(&imu_ptr);
-				last_IMU_rd_time = g_time();
-				break;
-			case LOG_DATA:
-			//  log_data();
-				last_log_time = g_time();
-				break;
-			case RD_GPS:
-				read_GPS(gpsData_ptr);
-				last_GPS_rd_time = g_time();
-				break;
-			case DOWNLINK:
-			//  send_downlink();
-				last_downlink_time = g_time();
-				break;
-		} // end STATE switch
-		
-	// While we are not in the main switch statement, check for interrupts
-	// Peak data is handled separately
-	system(CHECK_INTERRUPTS);
-		
-	} // End main while loop
+				break; */
 
-	// Close everything
-	close_IMU(&imu_ptr);
-	
-	return;
-	
-} // End main function
+			// Debugging:
+                       fprintf(stderr,"state = IDLE\n\n\n");
+                       SMSTATE = RD_IMU;
+                       break;
+
+               case RD_IMU:
+                       //read_IMU() reads IMU and populates the imuData structure
+                       fprintf(stderr,"state = RD_IMU\n");
+                       read_IMU(&imuData);
+                       SMSTATE = RD_GPS;
+                       break;
+
+               case RD_GPS:
+                       //read_GPS() stores the ASCII output in gpsData structure buffer
+                       fprintf(stderr,"state = RD_GPS\n");
+                       read_GPS(&gpsData);
+                       SMSTATE = LOG_DATA;
+                       break;
+
+               case LOG_DATA:
+                       //log entire sensorData structure, which contains the locations of
+                       fprintf(stderr,"state = LOG_DATA\n");
+                       datalogger(&sensorData,log_freq);
+                       SMSTATE = IDLE;
+                       break;
+
+               case DOWNLINK:
+                       //print stuff out to the telemetry port
+                       fprintf(stderr,"state = DOWNLINK\n");
+                       SMSTATE = IDLE;
+                       break;
+
+               default:
+                       SMSTATE = IDLE;
+                       break;
+       }
+
+return SMSTATE;
+}

@@ -9,8 +9,8 @@
 #include <string.h>
 #include <math.h>
 
-#include "/home/root/HASP2014/globaldefs.h"
-#include "/home/root/HASP2014/simple_gpio.h"
+#include "../../globaldefs.h"
+#include "../../utilities/gpio/simple_gpio.h"
 #include "gps_novatel.h"
 // #include "/home/root/HASP2014/utils/misc.h"
 

@@ -1,5 +1,6 @@
 #ifndef SIMPLEGPIO_H_   
 #define SIMPLEGPIO_H_
+#endif /* SIMPLEGPIO_H_ */
 
 #define SYSFS_GPIO_DIR "/sys/class/gpio"
 #define POLL_TIMEOUT (3 * 1000) /* 3 seconds */
@@ -8,5 +9,4 @@
 
 
 int gpio_get_value(unsigned int gpio, unsigned int *value);
-
-#endif /* SIMPLEGPIO_H_ */
+int gpio_set_value(unsigned int gpio, unsigned int value);

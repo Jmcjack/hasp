@@ -71,12 +71,12 @@ int spi_init(const char *device, uint8_t mode, uint8_t bpw, uint32_t speed)
 }
 
 
-int spi_transfer(spi *spi_ptr, uint8_t *tx, uint8_t *rx, uint32_t len)
+int spi_transfer(int spi_handle, uint8_t *tx, uint8_t *rx, uint32_t len)
 {
 
         fprintf(stderr,"performing duplex rw transfer of %d bytes\n", len);
 
-        if(spi_ptr == NULL || rx == NULL || tx == NULL)
+        if(spi_handle == NULL || rx == NULL || tx == NULL)
         {
                 fprintf(stderr,"spi | rx | tx was NULL\n");
                 return EXIT_FAILURE;
@@ -98,7 +98,7 @@ int spi_transfer(spi *spi_ptr, uint8_t *tx, uint8_t *rx, uint32_t len)
                 .cs_change = 0,
         };
 
-        ret = ioctl(spi_ptr->fd, SPI_IOC_MESSAGE(1), &tr);
+        ret = ioctl(spi_handle, SPI_IOC_MESSAGE(1), &tr);
 
         if(ret < 1)
         {
@@ -108,5 +108,11 @@ int spi_transfer(spi *spi_ptr, uint8_t *tx, uint8_t *rx, uint32_t len)
 
         return EXIT_SUCCESS;
 
+}
+
+int spi_free (int spi_handle)
+{
+	close(spi_handle);
+	return 1;
 }
 

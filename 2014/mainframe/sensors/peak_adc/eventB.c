@@ -13,7 +13,7 @@
 #include "../../utilities/spi/spi.h"
 #include "peak_ADC.h"
 
-int read_event()
+int read_eventB()
 {
 	int peakDataB;
 	int fd = (int)malloc(sizeof(int));
@@ -23,8 +23,17 @@ int read_event()
 
 	int *outputData = (int *)malloc(sizeof(int));
 
-	//generate timestamp from RTC?
-	//type timestamp = read_RTC()
+	// generate timestamp
+    	struct timespec spec;
+
+    	clock_gettime(CLOCK_REALTIME, &spec);
+
+    	long s  = spec.tv_sec;
+    	long us = round(spec.tv_nsec/1000); // Convert nanoseconds to microseconds
+	int s_p = (int)s;
+	int us_p = (int)us;
+	// end timestamp
+
 	uint8_t *tx = (uint8_t *)malloc(2*2*sizeof(uint8_t)); // shouldn't this be just 2?
 	uint8_t *rx = (uint8_t *)malloc(2*2*sizeof(uint8_t));
 
@@ -37,9 +46,18 @@ int read_event()
 	outputData[1] = rx[1];
 	peakDataB = ((outputData[0] & 0x4F) << 8) + outputData[1];
 
-	// Reset both Ch (using WR_GPIO function?)
+	// Reset ADC channels
+	gpio_set_value(EVENTB_RESET_GPIO, 1);
+	gpio_set_value(EVENTB_RESET_GPIO, 0);
 
-	// Logdata
+	// Log data in binary format
+	printf("Peak: %d\n", peakDataB);
+	FILE * fp;
+	fp = open(PEAK_FILENAMEB, "a+");
+	fwrite(&s_p, 1, sizeof(&s_p)/2, fp);
+    	fwrite(&us_p, 1, sizeof(&us_p)/2, fp);
+    	fwrite(&peakDataA, 1, sizeof(&peakDataB), fp);
+	fclose(fp);
 		
 	free(tx);
 	free(rx);

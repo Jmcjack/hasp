@@ -1,5 +1,8 @@
 #ifndef GLOBALDEFS_H_
 #define GLOBALDEFS_H_
+#endif
+
+#include <stdint.h>
 
 #define NSECS_PER_SEC           1000000000                      ///< [nsec/sec] nanoseconds per second */
 #define D2R                     0.017453292519943               ///< [rad] degrees to radians */
@@ -19,8 +22,6 @@
 	#define FALSE 0
 #endif
 
-#include "utilities/spi/spi.h"
-
 typedef unsigned char   byte;                                   ///< typedef of byte */
 typedef unsigned short  word;                                   ///< typedef of word */
 
@@ -33,6 +34,11 @@ enum errdefs
         noPacketHeader,         ///< Some data received, but cannot find packet header
         incompletePacket,	///< Packet header found, but complete packet not received
 };
+
+//(S)tate (M)achine State
+typedef enum SM_State {
+       IDLE,RD_PEAK,RD_IMU,RD_GPS,DOWNLINK,LOG_DATA
+} state;
 
 struct imu
 {
@@ -49,14 +55,7 @@ struct imu
         int magZ_raw;
         int temp_raw;
         uint16_t ADC_raw;
-        spi *spi_ptr;
-};
-
-struct xray
-{
-        unsigned long time;
-        unsigned int peakA;
-        unsigned int peakB;
+        int spi_handle;
 };
 
 struct gps {
@@ -78,24 +77,30 @@ struct gps {
         double time;    ///< [sec], timestamp of GPS data
         unsigned short newData; ///< [bool], flag set when GPS data has been updated
         unsigned short satVisible; ///< Number satellites used in the position solution
-        unsigned short navValid;///< flag indicating whether the solution is valid, 0 = valid
         unsigned short GPS_week;///< GPS week since current epoch.
         enum errdefs err_type;  ///< GPS status
         int baudRate;           ///< Baud rate for serial port
-        char* portName;         ///< Name of serial port
+        char * portName;         ///< Name of serial port
         int port;                       ///< handle for accessing serial port
-        unsigned char* localBuffer; ///< local buffer to store partial serial data packets
+        char * buffer; ///< local buffer to store partial serial data packets
         int bytesInLocalBuffer; ///< number of bytes in the local buffer
         int readState;                  ///< current state of serial data reader function
         int read_calls;                 ///< number of times the read_gps function has been called
+	int navValid;
+	
+};
+
+struct xray
+{
+       //unsigned long time;
+       unsigned int peakA;
+       unsigned int peakB;
+       int spi_handle;
 };
 
 struct sensordata
 {
-        struct imu *imuData_ptr;                ///< pointer to imu data structure
-        struct xray *xrayData_ptr;
-        struct gps *gpsData_ptr;                ///< pointer to gps data structure
+       struct imu *imuData_ptr;    ///< pointer to imu data structure
+       struct xray *xrayData_ptr;
+       struct gps *gpsData_ptr;    ///< pointer to gps data structure
 };
-
-#endif
-

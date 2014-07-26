@@ -16,26 +16,11 @@
 
 int init_IMU(struct imu *imu_ptr)
 {
-
-	imuData.supply_raw = 0;
-        imuData.gyroX_raw = 0;
-        imuData.gyroY_raw = 0;
-        imuData.gyroZ_raw = 0;
-        imuData.accelX_raw = 0;
-        imuData.accelY_raw = 0;
-        imuData.accelZ_raw = 0;
-        imuData.magX_raw = 0;
-        imuData.magY_raw = 0;
-        imuData.magZ_raw = 0;
-        imuData.temp_raw = 0;
-        imuData.ADC_raw = 0;
-        imuData.spi_ptr = (spi *)malloc(sizeof(spi *));
-
         int fd = (int)malloc(sizeof(int));
         fd = spi_init(IMU_device,IMU_mode,IMU_bpw,IMU_speed);
         fprintf(stderr,"fd = %d.\n",fd);
 
-        imu_ptr->spi_ptr->fd = fd;
+        imu_ptr->spi_handle = fd;
 
         return 0;
 }
@@ -57,7 +42,7 @@ int read_IMU(struct imu *imu_ptr)
         //0x3E00 command begins burst mode output; request all 12 data registers
         tx[0] = 0x3E;
         tx[1] = 0x00;
-        spi_transfer(imu_ptr->spi_ptr, tx, rx, 2);
+        spi_transfer(imu_ptr->spi_handle, tx, rx, 2);
 
         // This pause is necessary to ensure that the sensor has time to respond before the read attempt.
         // The SPI bit rate is 500kHz, with a 15 usec delay in between each 16-bit frame, and a 1 usec
@@ -70,7 +55,7 @@ int read_IMU(struct imu *imu_ptr)
                 tx[i] = 0x00;
         }
 
-        spi_transfer(imu_ptr->spi_ptr, tx, response, 12*2);
+        spi_transfer(imu_ptr->spi_handle, tx, response, 12*2);
 
         //timestamp the results
         imu_ptr->time = (int)time(NULL);
