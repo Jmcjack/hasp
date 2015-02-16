@@ -1,1 +1,0 @@
-gcc 2>./errors.txt main.c sensors/gps/gps_novatel.c sensors/imu/hasp_IMU.c sensors/peak_adc/eventA.c sensors/peak_adc/eventB.c sensors/peak_adc/eventAB.c utilities/datalogging/datalogging.c utilities/spi/spi.c utilities/gpio/simple_gpio.c -lm -o meow
