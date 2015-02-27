@@ -1,0 +1,7 @@
+Vortex86DX Notes
+
+Use generic g** compilers, since it is close to X86 based;
+http://t38005.embedded-openwrt-development.embeddedtalk.us/vortex-86dx-platform-t38005.html
+
+Tomcat Information w/ Datasheets, etc.
+http://www.versalogic.com/tom
