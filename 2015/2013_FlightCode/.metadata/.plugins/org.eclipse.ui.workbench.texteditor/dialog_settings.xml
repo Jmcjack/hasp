@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
+		<item value="237" key="DIALOG_WIDTH"/>
+		<item value="356" key="DIALOG_Y_ORIGIN"/>
+		<item value="577" key="DIALOG_X_ORIGIN"/>
+		<item value="357" key="DIALOG_HEIGHT"/>
+		<item value="1|Tahoma|8.25|0|WINDOWS|1|-11|0|0|0|400|0|0|0|1|0|0|0|0|Tahoma" key="DIALOG_FONT_NAME"/>
+	</section>
+	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
+		<item value="true" key="wrap"/>
+		<item value="false" key="casesensitive"/>
+		<item value="false" key="isRegEx"/>
+		<item value="false" key="incremental"/>
+		<item value="false" key="wholeword"/>
+		<item value="printer" key="selection"/>
+		<list key="findhistory">
+			<item value="printer"/>
+			<item value="xrayData"/>
+			<item value="2"/>
+			<item value="cyg_vector_t"/>
+			<item value="actuator"/>
+			<item value="int1"/>
+			<item value="saveAsFloatNames"/>
+			<item value="loop_counter"/>
+		</list>
+		<list key="replacehistory">
+			<item value="4"/>
+		</list>
+	</section>
+</section>
